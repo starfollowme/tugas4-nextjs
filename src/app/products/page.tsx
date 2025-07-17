@@ -3,8 +3,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- SVG Icons ---
-// Using inline SVGs for icons to avoid external dependencies.
 const PlusIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -36,8 +34,6 @@ const AlertTriangleIcon = () => (
     </svg>
 );
 
-
-// --- Type Definitions ---
 interface Product {
   id: number;
   name: string;
@@ -59,7 +55,6 @@ interface ToastMessage {
     type: 'success' | 'error';
 }
 
-// --- Main App Component ---
 export default function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,7 +71,6 @@ export default function App() {
     category: ''
   });
 
-  // --- Utility Functions ---
   const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
     const newToast: ToastMessage = { id: Date.now(), message, type };
     setToasts(prev => [...prev, newToast]);
@@ -85,7 +79,6 @@ export default function App() {
     }, 4000);
   }, []);
   
-  // --- API Interaction ---
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
@@ -93,12 +86,12 @@ export default function App() {
       const result = await response.json();
       
       if (!response.ok || !result.success) {
-        throw new Error(result.message || 'Failed to fetch products.');
+        throw new Error(result.message || 'Gagal mengambil data produk.');
       }
       
       setProducts(result.data);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+      const errorMessage = err instanceof Error ? err.message : 'Terjadi kesalahan tidak dikenal.';
       showToast(errorMessage, 'error');
     } finally {
       setLoading(false);
@@ -109,18 +102,16 @@ export default function App() {
     fetchProducts();
   }, [fetchProducts]);
 
-  // --- Event Handlers ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic client-side validation
     if (!formData.name || !formData.price) {
-      showToast('Name and price are required', 'error');
+      showToast('Nama dan harga wajib diisi', 'error');
       return;
     }
     const price = parseFloat(formData.price);
     if (isNaN(price) || price <= 0) {
-      showToast('Price must be a positive number', 'error');
+      showToast('Harga harus berupa angka positif', 'error');
       return;
     }
 
@@ -146,14 +137,14 @@ export default function App() {
         const result = await response.json();
 
         if (!response.ok || !result.success) {
-            throw new Error(result.message || `Failed to ${isEditing ? 'update' : 'add'} product.`);
+            throw new Error(result.message || `Gagal ${isEditing ? 'memperbarui' : 'menambah'} produk.`);
         }
 
         showToast(result.message, 'success');
-        fetchProducts(); // Refetch to update the list with new data
+        fetchProducts();
         closeModal();
     } catch(err) {
-        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+        const errorMessage = err instanceof Error ? err.message : 'Terjadi kesalahan tidak dikenal.';
         showToast(errorMessage, 'error');
     }
   };
@@ -169,14 +160,14 @@ export default function App() {
         const result = await response.json();
 
         if (!response.ok || !result.success) {
-            throw new Error(result.message || 'Failed to delete product.');
+            throw new Error(result.message || 'Gagal menghapus produk.');
         }
 
         showToast(result.message, 'success');
-        fetchProducts(); // Refetch to update list
+        fetchProducts();
         closeDeleteModal();
     } catch(err) {
-        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+        const errorMessage = err instanceof Error ? err.message : 'Terjadi kesalahan tidak dikenal.';
         showToast(errorMessage, 'error');
     }
   };
@@ -197,7 +188,6 @@ export default function App() {
     setIsDeleteModalOpen(true);
   };
   
-  // --- Modal and Form Management ---
   const resetForm = () => {
     setFormData({ name: '', price: '', description: '', category: '' });
     setEditingProduct(null);
@@ -217,7 +207,6 @@ export default function App() {
     setDeletingProductId(null);
   };
 
-  // --- Formatting ---
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -226,7 +215,6 @@ export default function App() {
     }).format(price);
   };
   
-  // --- Render Logic ---
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">
@@ -236,7 +224,7 @@ export default function App() {
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           ></motion.div>
-          <p className="text-xl font-semibold">Loading Products...</p>
+          <p className="text-xl font-semibold">Memuat Produk...</p>
         </div>
       </div>
     );
@@ -244,7 +232,6 @@ export default function App() {
 
   return (
     <>
-      {/* Toast Container */}
       <div className="fixed top-5 right-5 z-[100] w-full max-w-xs space-y-3">
         <AnimatePresence>
             {toasts.map(toast => (
@@ -266,8 +253,8 @@ export default function App() {
         <div className="max-w-7xl mx-auto">
           <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
             <div>
-              <h1 className="text-4xl font-bold text-sky-400">Product Dashboard</h1>
-              <p className="text-slate-400 mt-1">Manage your inventory with ease and style.</p>
+              <h1 className="text-4xl font-bold text-sky-400">Dasbor Produk</h1>
+              <p className="text-slate-400 mt-1">Kelola inventaris Anda dengan mudah dan bergaya.</p>
             </div>
             <motion.button
               whileHover={{ scale: 1.05, y: -2 }}
@@ -276,21 +263,20 @@ export default function App() {
               className="mt-4 sm:mt-0 flex items-center gap-2 bg-sky-500 text-white font-bold py-2 px-4 rounded-lg shadow-lg shadow-sky-500/30"
             >
               <PlusIcon />
-              Add Product
+              Tambah Produk
             </motion.button>
           </header>
 
-          {/* Products Table */}
           <div className="bg-slate-800/50 rounded-xl shadow-2xl overflow-hidden ring-1 ring-white/10">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-slate-800">
-                    <th className="p-4 text-sm font-semibold text-slate-300">Name</th>
-                    <th className="p-4 text-sm font-semibold text-slate-300">Category</th>
-                    <th className="p-4 text-sm font-semibold text-slate-300">Price</th>
-                    <th className="p-4 text-sm font-semibold text-slate-300 hidden md:table-cell">Description</th>
-                    <th className="p-4 text-sm font-semibold text-slate-300 text-center">Actions</th>
+                    <th className="p-4 text-sm font-semibold text-slate-300">Nama</th>
+                    <th className="p-4 text-sm font-semibold text-slate-300">Kategori</th>
+                    <th className="p-4 text-sm font-semibold text-slate-300">Harga</th>
+                    <th className="p-4 text-sm font-semibold text-slate-300 hidden md:table-cell">Deskripsi</th>
+                    <th className="p-4 text-sm font-semibold text-slate-300 text-center">Aksi</th>
                   </tr>
                 </thead>
                 <motion.tbody layout className="divide-y divide-slate-700">
@@ -324,8 +310,8 @@ export default function App() {
               </table>
               {products.length === 0 && !loading && (
                 <div className="text-center py-16 text-slate-500">
-                  <h3 className="text-xl font-semibold">No products found</h3>
-                  <p>Click "Add Product" to get started!</p>
+                  <h3 className="text-xl font-semibold">Tidak ada produk ditemukan</h3>
+                  <p>Klik "Tambah Produk" untuk memulai!</p>
                 </div>
               )}
             </div>
@@ -333,7 +319,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* Add/Edit & Delete Modals */}
       <AnimatePresence onExitComplete={() => {
           resetForm();
           setDeletingProductId(null);
@@ -352,38 +337,38 @@ export default function App() {
                 exit={{ scale: 0.9, opacity: 0, y: 50 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="bg-slate-800 rounded-xl shadow-2xl w-full max-w-md border border-slate-700"
-                onClick={(e) => e.stopPropagation()} // Prevent closing modal when clicking inside
+                onClick={(e) => e.stopPropagation()}
             >
                 <div className="p-6">
-                    <h2 className="text-2xl font-bold mb-6 text-sky-400">{editingProduct ? 'Edit Product' : 'Add New Product'}</h2>
+                    <h2 className="text-2xl font-bold mb-6 text-sky-400">{editingProduct ? 'Ubah Produk' : 'Tambah Produk Baru'}</h2>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-slate-400 mb-1">Product Name *</label>
+                            <label className="block text-sm font-medium text-slate-400 mb-1">Nama Produk *</label>
                             <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full bg-slate-900/50 px-3 py-2 border border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 transition" required />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-slate-400 mb-1">Price (IDR) *</label>
+                            <label className="block text-sm font-medium text-slate-400 mb-1">Harga (IDR) *</label>
                             <input type="number" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} className="w-full bg-slate-900/50 px-3 py-2 border border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 transition" min="0" required />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-slate-400 mb-1">Category</label>
+                            <label className="block text-sm font-medium text-slate-400 mb-1">Kategori</label>
                             <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full bg-slate-900/50 px-3 py-2 border border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 transition">
-                                <option value="">Select Category</option>
-                                <option value="Electronics">Electronics</option>
-                                <option value="Clothing">Clothing</option>
-                                <option value="Books">Books</option>
-                                <option value="Home">Home</option>
-                                <option value="Sports">Sports</option>
-                                <option value="Other">Other</option>
+                                <option value="">Pilih Kategori</option>
+                                <option value="Elektronik">Elektronik</option>
+                                <option value="Pakaian">Pakaian</option>
+                                <option value="Buku">Buku</option>
+                                <option value="Rumah Tangga">Rumah Tangga</option>
+                                <option value="Olahraga">Olahraga</option>
+                                <option value="Lainnya">Lainnya</option>
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-slate-400 mb-1">Description</label>
+                            <label className="block text-sm font-medium text-slate-400 mb-1">Deskripsi</label>
                             <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full bg-slate-900/50 px-3 py-2 border border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 transition" rows={3}></textarea>
                         </div>
                         <div className="flex gap-3 pt-4">
-                            <button type="button" onClick={closeModal} className="flex-1 bg-slate-600 hover:bg-slate-700 text-white py-2 px-4 rounded-md transition-colors duration-300">Cancel</button>
-                            <button type="submit" className="flex-1 bg-sky-500 hover:bg-sky-600 text-white py-2 px-4 rounded-md transition-colors duration-300">{editingProduct ? 'Update Product' : 'Add Product'}</button>
+                            <button type="button" onClick={closeModal} className="flex-1 bg-slate-600 hover:bg-slate-700 text-white py-2 px-4 rounded-md transition-colors duration-300">Batal</button>
+                            <button type="submit" className="flex-1 bg-sky-500 hover:bg-sky-600 text-white py-2 px-4 rounded-md transition-colors duration-300">{editingProduct ? 'Perbarui Produk' : 'Tambah Produk'}</button>
                         </div>
                     </form>
                 </div>
@@ -410,11 +395,11 @@ export default function App() {
                     <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-500/20 mb-4">
                         <AlertTriangleIcon />
                     </div>
-                    <h3 className="text-xl font-bold text-white">Delete Product</h3>
-                    <p className="text-slate-400 mt-2">Are you sure? This action cannot be undone.</p>
+                    <h3 className="text-xl font-bold text-white">Hapus Produk</h3>
+                    <p className="text-slate-400 mt-2">Apakah Anda yakin? Tindakan ini tidak dapat dibatalkan.</p>
                     <div className="flex gap-3 mt-6">
-                        <button onClick={closeDeleteModal} className="flex-1 bg-slate-600 hover:bg-slate-700 text-white py-2 px-4 rounded-md transition-colors duration-300">Cancel</button>
-                        <button onClick={confirmDelete} className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition-colors duration-300">Delete</button>
+                        <button onClick={closeDeleteModal} className="flex-1 bg-slate-600 hover:bg-slate-700 text-white py-2 px-4 rounded-md transition-colors duration-300">Batal</button>
+                        <button onClick={confirmDelete} className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition-colors duration-300">Hapus</button>
                     </div>
                 </motion.div>
             </motion.div>

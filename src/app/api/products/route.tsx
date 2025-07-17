@@ -6,11 +6,28 @@ export interface Product {
   price: number;
   description?: string;
   category?: string;
+  sku?: string;
+  stock?: number;
 }
 
-let products: Product[] = [];
+const products: Product[] = [
+    { id: 1, name: 'Laptop Pro', sku: 'LP-001', price: 15000000, stock: 50, description: 'Laptop bertenaga tinggi untuk para profesional.', category: 'Elektronik' },
+    { id: 2, name: 'Mouse Nirkabel', sku: 'MN-002', price: 250000, stock: 120, description: 'Mouse ergonomis dengan konektivitas nirkabel.', category: 'Aksesoris Komputer' },
+    { id: 3, name: 'Keyboard Mekanikal', sku: 'KM-003', price: 850000, stock: 75, description: 'Keyboard dengan switch mekanikal untuk pengalaman mengetik terbaik.', category: 'Aksesoris Komputer' },
+];
 
-let nextId = 1;
+let nextId = 4;
+
+const validateProduct = (product: Partial<Product>) => {
+  if (product.name !== undefined && (typeof product.name !== 'string' || product.name.trim() === '')) {
+    return 'Validasi gagal: "name" harus berupa string yang tidak kosong.';
+  }
+  if (product.price !== undefined && (typeof product.price !== 'number' || product.price <= 0)) {
+    return 'Validasi gagal: "price" harus berupa angka positif.';
+  }
+  return null;
+};
+
 
 export async function GET(request: NextRequest) {
   try {
@@ -60,25 +77,16 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    if (!body.name || body.price === undefined) {
+    if (body.name === undefined || body.price === undefined) {
       return NextResponse.json({
         success: false,
         message: 'Validasi gagal: "name" dan "price" adalah bidang yang wajib diisi.'
       }, { status: 400 });
     }
 
-    if (typeof body.name !== 'string' || body.name.trim() === '') {
-        return NextResponse.json({
-        success: false,
-        message: 'Validasi gagal: "name" harus berupa string yang tidak kosong.'
-      }, { status: 400 });
-    }
-
-    if (typeof body.price !== 'number' || body.price <= 0) {
-      return NextResponse.json({
-        success: false,
-        message: 'Validasi gagal: "price" harus berupa angka positif.'
-      }, { status: 400 });
+    const validationError = validateProduct(body);
+    if (validationError) {
+        return NextResponse.json({ success: false, message: validationError }, { status: 400 });
     }
 
     const newProduct: Product = {
@@ -86,7 +94,9 @@ export async function POST(request: NextRequest) {
       name: body.name,
       price: body.price,
       description: body.description || '',
-      category: body.category || 'Umum'
+      category: body.category || 'Umum',
+      sku: body.sku || '',
+      stock: body.stock || 0,
     };
 
     products.push(newProduct);
@@ -99,10 +109,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[API_PRODUCTS_POST_ERROR]', error);
     if (error instanceof SyntaxError) {
-        return NextResponse.json({
-            success: false,
-            message: 'Gagal membuat produk: Format JSON tidak valid pada body permintaan.'
-        }, { status: 400 });
+      return NextResponse.json({
+          success: false,
+          message: 'Gagal membuat produk: Format JSON tidak valid pada body permintaan.'
+      }, { status: 400 });
     }
     return NextResponse.json({
       success: false,
@@ -131,22 +141,17 @@ export async function PUT(request: NextRequest) {
       }, { status: 404 });
     }
 
+    const validationError = validateProduct(body);
+    if (validationError) {
+        return NextResponse.json({ success: false, message: validationError }, { status: 400 });
+    }
+
     const originalProduct = products[productIndex];
 
     const updatedProduct: Product = {
       ...originalProduct,
-      name: body.name || originalProduct.name,
-      price: body.price || originalProduct.price,
-      description: body.description !== undefined ? body.description : originalProduct.description,
-      category: body.category !== undefined ? body.category : originalProduct.category
+      ...body,
     };
-
-    if (typeof updatedProduct.name !== 'string' || updatedProduct.name.trim() === '') {
-        return NextResponse.json({ success: false, message: 'Validasi gagal: "name" harus berupa string yang tidak kosong.'}, { status: 400 });
-    }
-    if (typeof updatedProduct.price !== 'number' || updatedProduct.price <= 0) {
-        return NextResponse.json({ success: false, message: 'Validasi gagal: "price" harus berupa angka positif.'}, { status: 400 });
-    }
 
     products[productIndex] = updatedProduct;
 
@@ -158,10 +163,10 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('[API_PRODUCTS_PUT_ERROR]', error);
     if (error instanceof SyntaxError) {
-        return NextResponse.json({
-            success: false,
-            message: 'Gagal memperbarui produk: Format JSON tidak valid pada body permintaan.'
-        }, { status: 400 });
+      return NextResponse.json({
+          success: false,
+          message: 'Gagal memperbarui produk: Format JSON tidak valid pada body permintaan.'
+      }, { status: 400 });
     }
     return NextResponse.json({
       success: false,
